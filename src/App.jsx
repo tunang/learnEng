@@ -115,6 +115,27 @@ const VocabularyApp = () => {
     setShowMeaning(!showMeaning);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'ArrowRight') {
+        nextExercise(); // Move to the next exercise
+      } else if (event.key === 'ArrowLeft') {
+        prevExercise(); // Move to the previous exercise
+      } else if (event.key === 'Enter') {
+        if (isCorrect === null) {
+          checkAnswer(); // Check answer if not yet checked
+        } else {
+          nextExercise(); // Move to the next exercise if answer is checked
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentExerciseIndex, isCorrect]);
+
   return (
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-3xl font-bold text-center mb-6">English Vocabulary Learning</h1>
