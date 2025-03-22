@@ -79,11 +79,12 @@ const VocabularyApp = () => {
   };
 
   const nextExercise = () => {
+    // Only move to next exercise if there are more exercises
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(currentExerciseIndex + 1);
       resetExerciseState();
     } else {
-      // End of exercises
+      // If it's the last exercise, set mode to review
       setExerciseMode('review');
     }
   };
@@ -115,18 +116,27 @@ const VocabularyApp = () => {
     setShowMeaning(!showMeaning);
   };
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      if (isCorrect === null) {
+        checkAnswer();
+      } else {
+        nextExercise();
+      }
+    } else if (event.key === 'r' || event.key === 'R') {
+      resetExerciseState(); // Reset current exercise state
+      setUserAnswer(''); // Clear user answer
+      setIsCorrect(null); // Reset answer check state
+      setFeedback(''); // Clear feedback
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'ArrowRight') {
         nextExercise(); // Move to the next exercise
       } else if (event.key === 'ArrowLeft') {
         prevExercise(); // Move to the previous exercise
-      } else if (event.key === 'Enter') {
-        if (isCorrect === null) {
-          checkAnswer(); // Check answer if not yet checked
-        } else {
-          nextExercise(); // Move to the next exercise if answer is checked
-        }
       }
     };
 
@@ -134,7 +144,21 @@ const VocabularyApp = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [currentExerciseIndex, isCorrect]);
+  }, [currentExerciseIndex]);
+
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'Tab') {
+        event.preventDefault(); // Prevent default tab behavior
+        document.getElementById('answer-input').focus(); // Focus on the answer input
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -238,6 +262,7 @@ const VocabularyApp = () => {
                 <label className="block text-sm font-medium mb-2">Your answer:</label>
                 <input
                   type="text"
+                  id="answer-input"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   disabled={isCorrect !== null}
@@ -284,6 +309,12 @@ const VocabularyApp = () => {
                   className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
                 >
                   {showMeaning ? 'Hide Meaning' : 'Show Meaning'}
+                </button>
+                <button
+                  onClick={() => resetExerciseState()} // Retry the current exercise
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                >
+                  Do This Question Again (R)
                 </button>
               </div>
               <div className="flex gap-2">
